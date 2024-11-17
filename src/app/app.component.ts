@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, HostListener, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { EventLoopService } from './shared/services/event-loop.service';
 
 @Component({
   selector: 'app-root',

@@ -1,2 +1,8 @@
 <!-- <klife-spyrograph-circle-drawer [dimentions]="dimentions()" [circles]="rollingCircles"></klife-spyrograph-circle-drawer> -->
-<ng-container #view></ng-container>
+<!-- <ng-container #view></ng-container> -->
+ <ng-container *ngIf="!startedAnimation; else animation">
+   <klife-spyrograph-param-editor [dimentions]="dimentions" [circles]="rollingCircles" (startAnimation)="startAnimation()"></klife-spyrograph-param-editor>
+  </ng-container>
+<ng-template #animation>
+  <klife-spyrograph-animator [dimentions]="dimentions" [circles]="rollingCircles()"></klife-spyrograph-animator>
+ </ng-template>

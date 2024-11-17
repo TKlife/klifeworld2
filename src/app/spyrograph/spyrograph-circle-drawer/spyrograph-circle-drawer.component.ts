@@ -82,11 +82,6 @@ export class SpyrographCircleDrawerComponent {
       ctx.fill()
     }
     ctx.closePath()
-    ctx.beginPath()
-    ctx.moveTo(circle.position.x + drawingPoint.position.x, circle.position.y + drawingPoint.position.y)
-    ctx.lineTo(circle.position.x, circle.position.y)
-    ctx.closePath()
-    ctx.stroke()
   }
 
   private drawCircle(ctx: CanvasRenderingContext2D, circle: RollingCircle) {

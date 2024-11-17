@@ -1,10 +1,11 @@
-import { Component, effect, EventEmitter, inject, Input, Output, ViewChild, WritableSignal } from '@angular/core';
+import { Component, ComponentRef, effect, EventEmitter, inject, Input, Output, ViewChild, WritableSignal } from '@angular/core';
 import { RollingCircle } from '../models/rolling-circle.model';
 import { SpyrographCircleDrawerComponent } from '../spyrograph-circle-drawer/spyrograph-circle-drawer.component';
 import { Dimentions2d } from '../../shared/models/geometry/dimentions-2d.model';
 import { EventLoopService } from '../../shared/services/event-loop.service';
 import { ThisReceiver } from '@angular/compiler';
 import { GeometryUtils } from '../../shared/utils/geometry.utils';
+import { Point2d } from '../../shared/models/geometry/point-2d.model';
 
 @Component({
   selector: 'klife-spyrograph-param-editor',
@@ -81,6 +82,10 @@ export class SpyrographParamEditorComponent {
         if (this.selectedCircle) {
           this.selectedCircle.position.x = event.x
           this.selectedCircle.position.y = event.y
+          const centerX = this.dimentions().width / 2;
+          const centerY = this.dimentions().height / 2;
+          this.selectedCircle.polarPosition = GeometryUtils.getPolarFromPoint({x: event.x - centerX, y: event.y - centerY})
+          this.selectedCircle.baseCircle.radius = GeometryUtils.lengthOfLine({x: centerX, y: centerY}, this.selectedCircle.position) + this.selectedCircle.radius
           this.drawer.draw()
         }
       }

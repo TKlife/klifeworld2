@@ -27,8 +27,6 @@ export class SpyrographCircleDrawerComponent {
   circles!: RollingCircle[]
   @Input()
   center!: Point2d
-  @Input()
-  alwaysShow = false
 
   canvasContainer!: HTMLDivElement
   circleCanvas!: HTMLCanvasElement
@@ -64,16 +62,10 @@ export class SpyrographCircleDrawerComponent {
   }
 
   drawRollingCircle(selectedCircle: RollingCircle) {
-    if (selectedCircle.baseCircle.show || this.alwaysShow) {
-      this.drawGraphicCircle(selectedCircle.baseCircle)
-    }
-    if (selectedCircle.show || this.alwaysShow) {
-      this.drawGraphicCircle(selectedCircle)
-      // this.drawCircle(ctx, selectedCircle)
-    }
-    if (selectedCircle.drawingPoint.show || this.alwaysShow) {
-      this.drawGraphicCircle(selectedCircle.drawingPoint, {x: selectedCircle.position.x + selectedCircle.drawingPoint.position.x, y: selectedCircle.position.y + selectedCircle.drawingPoint.position.y})
-    }
+    this.drawGraphicCircle(selectedCircle.baseCircle)
+    this.drawGraphicCircle(selectedCircle)
+    this.drawGraphicCircle(selectedCircle.drawingPoint, {x: selectedCircle.position.x + selectedCircle.drawingPoint.position.x, y: selectedCircle.position.y + selectedCircle.drawingPoint.position.y})
+    
   }
 
   private drawDrawingPoint(circle: RollingCircle, ctx: CanvasRenderingContext2D) {
@@ -107,7 +99,7 @@ export class SpyrographCircleDrawerComponent {
     const ctx = this.circleContext
     ctx.strokeStyle = circle.strokeColor
     ctx.fillStyle = circle.fillColor
-    ctx.lineWidth = 2
+    ctx.lineWidth = circle.lineWidth
     ctx.beginPath()
     if (!position) {
       ctx.arc(circle.position.x, circle.position.y, circle.radius, 0, Math.PI * 2)

@@ -6,11 +6,13 @@ import { EventLoopService } from '../../shared/services/event-loop.service';
 import { ThisReceiver } from '@angular/compiler';
 import { GeometryUtils } from '../../shared/utils/geometry.utils';
 import { Point2d } from '../../shared/models/geometry/point-2d.model';
+import { FormsModule, NgModel } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'klife-spyrograph-param-editor',
   standalone: true,
-  imports: [SpyrographCircleDrawerComponent],
+  imports: [SpyrographCircleDrawerComponent, FormsModule, CommonModule],
   templateUrl: './spyrograph-param-editor.component.html',
   styleUrl: './spyrograph-param-editor.component.scss'
 })
@@ -31,15 +33,11 @@ export class SpyrographParamEditorComponent {
   mouseMoveEvent = this.mousemove.bind(this)
 
   constructor() {
-    // effect(() => {
-    //   if (this.circles().length > 0) {
-    //     this.drawer.draw()
-    //   }
-    // })
+
   }
 
-  ngAfterViweInit() {
-    this.drawer.draw()
+  ngOnInit() {
+    this.selectedCircle = this.circles()[0]
   }
 
   insideCircle(event: MouseEvent, container: HTMLDivElement) {
@@ -69,7 +67,7 @@ export class SpyrographParamEditorComponent {
   mouseUp(event: MouseEvent, container: HTMLDivElement) {
     this.eventLoop.addEvent('param_mouse_up', {
       function: () => {
-        this.selectedCircle = undefined
+        // this.selectedCircle = undefined
         this.removeMouseMoveEvent(container)
         this.eventLoop.removeEvent('param_mouse_move')
       }
@@ -82,9 +80,7 @@ export class SpyrographParamEditorComponent {
         if (this.selectedCircle) {
           this.selectedCircle.position.x = event.x
           this.selectedCircle.position.y = event.y
-          this.selectedCircle.polarPosition = GeometryUtils.getPolarFromPoint({x: event.x - this.center.x, y: event.y - this.center.y})
-          this.selectedCircle.baseCircle.radius = GeometryUtils.lengthOfLine({x: this.center.x, y: this.center.y}, this.selectedCircle.position) + this.selectedCircle.radius
-          this.drawer.draw()
+          this.updateCircle(this.selectedCircle)
         }
       }
     })
@@ -92,5 +88,19 @@ export class SpyrographParamEditorComponent {
 
   removeMouseMoveEvent(container: HTMLDivElement) {
     container.removeEventListener('mousemove', this.mouseMoveEvent)
+  }
+
+  onInput(circle: RollingCircle) {
+    console.log(circle.position.y)
+    this.updateCircle(circle)
+  }
+
+  updateCircle(circle: RollingCircle) {
+    if (this.selectedCircle) {
+      circle.polarPosition = GeometryUtils.getPolarFromPoint({x: circle.position.x - this.center.x, y: circle.position.y - this.center.y})
+      circle.drawingPoint.polarPosition = GeometryUtils.getPolarFromPoint(circle.drawingPoint.position)
+      circle.baseCircle.radius = GeometryUtils.lengthOfLine({x: this.center.x, y: this.center.y}, circle.position) + circle.radius
+      this.drawer.draw()
+    }
   }
 }

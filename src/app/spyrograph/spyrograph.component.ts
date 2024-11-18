@@ -84,7 +84,6 @@ export class SpyrographComponent {
         fillColor: '#FF9911',
         stroke: true,
         fill: true,
-        show: false
       },
       baseCircle: {
         radius: baseCircleRadius,
@@ -96,10 +95,8 @@ export class SpyrographComponent {
         fillColor: '#009988',
         stroke: true,
         fill: true,
-        show: true
       },
       interior: interior,
-      show: false,
       stroke: true,
       fill: true,
     }

@@ -1,0 +1,12 @@
+.parameters-container {
+  @apply grid gap-4 grid-flow-row h-min text-white;
+  grid-template-columns: auto 1fr auto 1fr;
+}
+
+.section-header {
+  @apply font-semibold uppercase tracking-wider col-span-4 -ml-2;
+}
+
+.section-label {
+  @apply justify-self-end self-center font-light tracking-wider;
+}

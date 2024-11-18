@@ -29,7 +29,7 @@ export class SpyrographAnimatorComponent {
   @ViewChild('circleDrawer', { static: true })
   circleDrawer!: SpyrographCircleDrawerComponent
   @ViewChild('patternDrawer', { static: true })
-  patternDrawer!: SpyrographCircleDrawerComponent
+  patternDrawer!: SpyrographPatternDrawerComponent
   @Input()
   circles: AnimatedCircle[] = []
   @Input()
@@ -39,12 +39,16 @@ export class SpyrographAnimatorComponent {
   patternPoints: {color: string, point: Point2d}[] = []
 
   ngOnInit() {
-
+    this.updatePatternData()
+    for (const [index, point] of this.patternPoints.entries()) {
+      this.patternDrawer.lastPoints[index] = point.point
+    }
     this.eventLoop.addContinuous('animate-spyrograph', {
       function: () => {
         this.updateCircleData()
         this.circleDrawer.draw()
         this.updatePatternData()
+        this.patternDrawer.drawingPoints = this.patternPoints
         this.patternDrawer.draw()
       },
     })

@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { Component, effect, ElementRef, Input, ViewChild } from '@angular/core';
 import { RollingCircle } from '../models/rolling-circle.model';
 import { Point2d } from '../../shared/models/geometry/point-2d.model';
 import { Dimentions2d } from '../../shared/models/geometry/dimentions-2d.model';
@@ -23,6 +23,12 @@ export class SpyrographPatternDrawerComponent {
 
   lastPoints: Point2d[] = []
 
+  constructor() {
+    effect(() => {
+      this.draw()
+    })
+  }
+
   ngOnInit() {    
     this.patternCanvas = this.patterCanvasRef.nativeElement
     this.resize()
@@ -31,6 +37,9 @@ export class SpyrographPatternDrawerComponent {
     if (patternContext) {
       this.patternContext = patternContext
       this.patternContext.translate(0.5, 0.5)
+    }
+    for (const [index, point] of this.drawingPoints.entries()) {
+      this.lastPoints[index] = point.point
     }
   }
 

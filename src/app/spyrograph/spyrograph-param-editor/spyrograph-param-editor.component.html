@@ -1,8 +1,81 @@
 <div #container class="h-full w-full realtive" (mousedown)="insideCircle($event, container)" (mouseup)="mouseUp($event, container)">
-  <klife-spyrograph-circle-drawer #drawer [center]="center" [circles]="circles()" [alwaysShow]="true"></klife-spyrograph-circle-drawer>
+  <klife-spyrograph-circle-drawer #drawer [center]="center" [circles]="circles()"></klife-spyrograph-circle-drawer>
   <div class="absolute right-4 top-4 bottom-4 flex flex-col bg-black opacity-50 gap-4 p-4">
-    <span class="opacity-100 text-white">Parameters</span>
-    <div class="flex-grow"></div>
+    <span class="opacity-100 text-white col-span-4 font-semibold text-lg uppercase tracking-wider">Parameters</span>
+    <div class="grow px-6">
+      <div class="parameters-container">
+        <ng-container *ngIf="selectedCircle">
+          <span class="section-header">Position</span>
+          <span class="section-label">X</span>
+          <input type="number" [(ngModel)]="selectedCircle.position.x" (input)="updateCircle(selectedCircle)">
+          <span class="section-label">Y</span>
+          <input type="number" [(ngModel)]="selectedCircle.position.y" (input)="updateCircle(selectedCircle)">
+          <span class="section-label">Point X</span>
+          <input type="number" [(ngModel)]="selectedCircle.drawingPoint.position.x" (input)="updateCircle(selectedCircle)">
+          <span class="section-label">Point Y</span>
+          <input type="number" [(ngModel)]="selectedCircle.drawingPoint.position.y" (input)="updateCircle(selectedCircle)">
+          <span class="section-header">Size</span>
+          <span class="section-label">Circle Radius</span>
+          <input type="number" [(ngModel)]="selectedCircle.radius" (input)="updateCircle(selectedCircle)">
+          <span class="section-label">Point Radius</span>
+          <input type="number" [(ngModel)]="selectedCircle.drawingPoint.radius" (input)="updateCircle(selectedCircle)">
+
+          <span class="section-header">Circle Look</span>
+          <span class="section-label">Outline</span>
+          <input type="text" [(ngModel)]="selectedCircle.strokeColor" (input)="updateCircle(selectedCircle)">
+          <span class="section-label">Width</span>
+          <input type="number" [(ngModel)]="selectedCircle.lineWidth" (input)="updateCircle(selectedCircle)">
+          <span class="section-label">Fill</span>
+          <input type="text" [(ngModel)]="selectedCircle.fillColor" (input)="updateCircle(selectedCircle)">
+          <div class="self-center">
+            <label class="section-label pr-4">Stroke</label>
+            <input type="checkbox" [(ngModel)]="selectedCircle.stroke" (change)="updateCircle(selectedCircle)">
+          </div>
+          <div class="self-center">
+            <label class="section-label pr-4">Fill</label>
+            <input type="checkbox" [(ngModel)]="selectedCircle.fill" (change)="updateCircle(selectedCircle)">
+          </div>
+
+          <span class="section-header">Point Look</span>
+          <span class="section-label">Outline</span>
+          <input type="text" [(ngModel)]="selectedCircle.drawingPoint.strokeColor" (input)="updateCircle(selectedCircle)">
+          <span class="section-label">Line Width</span>
+          <input type="number" [(ngModel)]="selectedCircle.drawingPoint.lineWidth" (input)="updateCircle(selectedCircle)">
+          <span class="section-label">Fill</span>
+          <input type="text" [(ngModel)]="selectedCircle.drawingPoint.fillColor" (input)="updateCircle(selectedCircle)">
+          <div class="self-center">
+            <label class="section-label pr-4">Stroke</label>
+            <input type="checkbox" [(ngModel)]="selectedCircle.drawingPoint.stroke" (change)="updateCircle(selectedCircle)">
+          </div>
+          <div class="self-center">
+            <label class="section-label pr-4">Fill</label>
+            <input type="checkbox" [(ngModel)]="selectedCircle.drawingPoint.fill" (change)="updateCircle(selectedCircle)">
+          </div>
+
+          <span class="section-header">Base Circle Look</span>
+          <span class="section-label">Outline</span>
+          <input type="text" [(ngModel)]="selectedCircle.baseCircle.strokeColor" (input)="updateCircle(selectedCircle)">
+          <span class="section-label">Line Width</span>
+          <input type="number" [(ngModel)]="selectedCircle.baseCircle.lineWidth" (input)="updateCircle(selectedCircle)">
+          <span class="section-label">Fill</span>
+          <input type="text" [(ngModel)]="selectedCircle.baseCircle.fillColor" (input)="updateCircle(selectedCircle)">
+          <div class="self-center">
+            <label class="section-label pr-4">Stroke</label>
+            <input type="checkbox" [(ngModel)]="selectedCircle.baseCircle.stroke" (change)="updateCircle(selectedCircle)">
+          </div>
+          <div class="self-center">
+            <label class="section-label pr-4">Fill</label>
+            <input type="checkbox" [(ngModel)]="selectedCircle.baseCircle.fill" (change)="updateCircle(selectedCircle)">
+          </div>
+
+          <span class="section-header">Speed</span>
+          <span class="section-label">Jump Angle</span>
+          <input type="number" [(ngModel)]="selectedCircle.speed" (input)="updateCircle(selectedCircle)">
+          <span class="section-label">Speed</span>
+          <input type="number" [(ngModel)]="eventLoop.frameRate" (input)="eventLoop.changeFrameRate()">
+        </ng-container>
+      </div>
+    </div>
     <button class="opacity-100 bg-white text-black" (click)="startAnimation.emit()">
       start
     </button>

@@ -1,23 +1,32 @@
 import { Injectable } from '@angular/core';
-import { interval } from 'rxjs';
+import { interval, Subscription } from 'rxjs';
 import { Point2d } from '../models/geometry/point-2d.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EventLoopService {
-  frameRate = 30;
+  frameRate = 60
   mousePostition: Point2d = {x: 0, y: 0}
   events: {[key: string] : {params?: any[], function: (params?: any[]) => any, continous?: boolean}} = {}
   listenerCache: {[key: string] : {params?: any[], function: (params?: any[]) => any}} = {}
   paused = false
+  loop!: Subscription
 
   constructor() {
-    interval(1000 / this.frameRate).subscribe(() => {
+    this.startEventLoop()
+  }
+
+  startEventLoop() {
+    this.loop = interval(1000 / this.frameRate).subscribe(() => {
       if (!this.paused) {
         this.doEvents()
       }
     })
+  }
+
+  stopEventLoop() {
+    this.loop.unsubscribe()
   }
 
   doEvents(events?: {[key: string] : {params?: any[], function: (params?: any[]) => any}}) {
@@ -57,5 +66,13 @@ export class EventLoopService {
 
   togglePause() {
     this.paused = !this.paused
+  }
+
+  changeFrameRate(frameRate?: number) {
+    if (frameRate) {
+      this.frameRate = frameRate
+    }
+    this.stopEventLoop()
+    this.startEventLoop()
   }
 }

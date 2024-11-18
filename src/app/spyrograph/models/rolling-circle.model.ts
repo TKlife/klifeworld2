@@ -4,9 +4,8 @@ import { GraphicCircle } from '../../shared/models/graphics/graphic-circle.model
 
 export interface RollingCircle extends GraphicCircle {
   speed: number
-  drawingPoint: GraphicCircle
+  drawingPoint: GraphicCircle & {show: boolean}
+  baseCircle: GraphicCircle & {show: boolean}
   show: boolean
-  showDrawingPoint: boolean
-  baseCircle: Circle
   interior: boolean
 }

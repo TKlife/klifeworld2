@@ -22,7 +22,7 @@ export class SpyrographParamEditorComponent {
   @Input()
   circles!: WritableSignal<RollingCircle[]>
   @Input()
-  dimentions!: WritableSignal<Dimentions2d>
+  center!: Point2d
   @Output()
   startAnimation = new EventEmitter<void>()
 
@@ -82,10 +82,8 @@ export class SpyrographParamEditorComponent {
         if (this.selectedCircle) {
           this.selectedCircle.position.x = event.x
           this.selectedCircle.position.y = event.y
-          const centerX = this.dimentions().width / 2;
-          const centerY = this.dimentions().height / 2;
-          this.selectedCircle.polarPosition = GeometryUtils.getPolarFromPoint({x: event.x - centerX, y: event.y - centerY})
-          this.selectedCircle.baseCircle.radius = GeometryUtils.lengthOfLine({x: centerX, y: centerY}, this.selectedCircle.position) + this.selectedCircle.radius
+          this.selectedCircle.polarPosition = GeometryUtils.getPolarFromPoint({x: event.x - this.center.x, y: event.y - this.center.y})
+          this.selectedCircle.baseCircle.radius = GeometryUtils.lengthOfLine({x: this.center.x, y: this.center.y}, this.selectedCircle.position) + this.selectedCircle.radius
           this.drawer.draw()
         }
       }

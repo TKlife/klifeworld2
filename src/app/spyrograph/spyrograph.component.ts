@@ -57,41 +57,49 @@ export class SpyrographComponent {
   }
 
   startAnimation() {
-    
     this.startedAnimation = true
   }
 
   createRollingCircle(interior = true): RollingCircle {
-    const radius = 100
-    const position = {x: this.center().x + 200, y: this.center().y}
+    const radius = 140
+    const position = {x: this.center().x + 290, y: this.center().y}
     const polarPosition = GeometryUtils.getPolarFromPoint({x: position.x - this.center().x, y: position.y - this.center().y})
     const baseCircleRadius = GeometryUtils.lengthOfLine(this.center(), position) + radius
     return {
       radius,
       position,
       polarPosition,
-      speed: .1,
+      speed: .2,
       strokeColor: '#FF0000',
       fillColor: '#FF0000',
       opacity: 1,
       lineWidth: 1,
       drawingPoint: {
-        radius: 10,
+        radius: 5,
         position: { x: 0, y: 0 },
-        polarPosition: {radius: 100, theta: 0},
+        polarPosition: {radius: 70, theta: 0},
         opacity: 1,
         lineWidth: 1,
-        strokeColor: '#000000',
-        fillColor: '#000000',
+        strokeColor: '#FF9911',
+        fillColor: '#FF9911',
         stroke: true,
         fill: true,
+        show: false
       },
       baseCircle: {
         radius: baseCircleRadius,
+        position: this.center(),
+        polarPosition: {radius: 0, theta: 0}, 
+        opacity: 1,
+        lineWidth: 1,
+        strokeColor: '#009988',
+        fillColor: '#009988',
+        stroke: true,
+        fill: true,
+        show: true
       },
       interior: interior,
-      show: true,
-      showDrawingPoint: true,
+      show: false,
       stroke: true,
       fill: true,
     }

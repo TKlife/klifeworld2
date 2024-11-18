@@ -1,5 +1,5 @@
 <div #container class="h-full w-full realtive" (mousedown)="insideCircle($event, container)" (mouseup)="mouseUp($event, container)">
-  <klife-spyrograph-circle-drawer #drawer [dimentions]="dimentions" [circles]="circles()"></klife-spyrograph-circle-drawer>
+  <klife-spyrograph-circle-drawer #drawer [center]="center" [circles]="circles()" [alwaysShow]="true"></klife-spyrograph-circle-drawer>
   <div class="absolute right-4 top-4 bottom-4 flex flex-col bg-black opacity-50 gap-4 p-4">
     <span class="opacity-100 text-white">Parameters</span>
     <div class="flex-grow"></div>

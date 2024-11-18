@@ -9,6 +9,8 @@ import {
 } from '@angular/core'
 import { Dimentions2d } from '../../shared/models/geometry/dimentions-2d.model'
 import { RollingCircle } from '../models/rolling-circle.model'
+import { Point2d } from '../../shared/models/geometry/point-2d.model'
+import { GraphicCircle } from '../../shared/models/graphics/graphic-circle.model'
 
 @Component({
   selector: 'klife-spyrograph-circle-drawer',
@@ -24,11 +26,11 @@ export class SpyrographCircleDrawerComponent {
   @Input()
   circles!: RollingCircle[]
   @Input()
-  dimentions!: WritableSignal<Dimentions2d>
+  center!: Point2d
+  @Input()
+  alwaysShow = false
 
   canvasContainer!: HTMLDivElement
-  patternCanvas!: HTMLCanvasElement
-  patternContext!: CanvasRenderingContext2D
   circleCanvas!: HTMLCanvasElement
   circleContext!: CanvasRenderingContext2D
 
@@ -53,8 +55,8 @@ export class SpyrographCircleDrawerComponent {
   }
 
   resize() {
-    this.circleCanvas.height = this.dimentions().height
-    this.circleCanvas.width = this.dimentions().width
+    this.circleCanvas.height = this.center.y * 2
+    this.circleCanvas.width = this.center.x * 2
     
     if (this.circleContext) {
       this.circleContext.translate(0.5, 0.5)
@@ -62,11 +64,16 @@ export class SpyrographCircleDrawerComponent {
   }
 
   drawRollingCircle(selectedCircle: RollingCircle) {
-    const ctx = this.circleContext
-    ctx.strokeStyle = selectedCircle.strokeColor
-    ctx.fillStyle = selectedCircle.fillColor
-    this.drawCircle(ctx, selectedCircle)
-    this.drawDrawingPoint(selectedCircle, ctx)
+    if (selectedCircle.baseCircle.show || this.alwaysShow) {
+      this.drawGraphicCircle(selectedCircle.baseCircle)
+    }
+    if (selectedCircle.show || this.alwaysShow) {
+      this.drawGraphicCircle(selectedCircle)
+      // this.drawCircle(ctx, selectedCircle)
+    }
+    if (selectedCircle.drawingPoint.show || this.alwaysShow) {
+      this.drawGraphicCircle(selectedCircle.drawingPoint, {x: selectedCircle.position.x + selectedCircle.drawingPoint.position.x, y: selectedCircle.position.y + selectedCircle.drawingPoint.position.y})
+    }
   }
 
   private drawDrawingPoint(circle: RollingCircle, ctx: CanvasRenderingContext2D) {
@@ -93,6 +100,27 @@ export class SpyrographCircleDrawerComponent {
     if (circle.fill) {
       ctx.fill()
     }
+    ctx.closePath()
+  }
+
+  drawGraphicCircle(circle: GraphicCircle, position?: Point2d) {
+    const ctx = this.circleContext
+    ctx.strokeStyle = circle.strokeColor
+    ctx.fillStyle = circle.fillColor
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    if (!position) {
+      ctx.arc(circle.position.x, circle.position.y, circle.radius, 0, Math.PI * 2)
+    } else {
+      ctx.arc(position.x, position.y, circle.radius, 0, Math.PI * 2)
+    }
+    if (circle.stroke) {
+      ctx.stroke()
+    }
+    if (circle.fill) {
+      ctx.fill()
+    }
+    ctx.closePath()
     ctx.closePath()
   }
 }

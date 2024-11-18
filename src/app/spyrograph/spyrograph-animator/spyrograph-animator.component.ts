@@ -13,11 +13,13 @@ import { AnimatedCircle } from './animated-circle.model'
 import { EventLoopService } from '../../shared/services/event-loop.service'
 import { GeometryUtils } from '../../shared/utils/geometry.utils'
 import { Point2d } from '../../shared/models/geometry/point-2d.model'
+import { bindCallback } from 'rxjs'
+import { SpyrographPatternDrawerComponent } from "../spyrograph-pattern-drawer/spyrograph-pattern-drawer.component";
 
 @Component({
   selector: 'klife-spyrograph-animator',
   standalone: true,
-  imports: [SpyrographCircleDrawerComponent],
+  imports: [SpyrographCircleDrawerComponent, SpyrographPatternDrawerComponent],
   templateUrl: './spyrograph-animator.component.html',
   styleUrl: './spyrograph-animator.component.scss',
 })
@@ -26,62 +28,40 @@ export class SpyrographAnimatorComponent {
   view!: ViewContainerRef
   @ViewChild('circleDrawer', { static: true })
   circleDrawer!: SpyrographCircleDrawerComponent
-  @ViewChild('circleCanvas', { static: true })
-  patternCanvasRef!: ElementRef<HTMLCanvasElement>
+  @ViewChild('patternDrawer', { static: true })
+  patternDrawer!: SpyrographCircleDrawerComponent
   @Input()
   circles: AnimatedCircle[] = []
   @Input()
-  dimentions!: WritableSignal<Dimentions2d>
+  center!: Point2d
 
   eventLoop = inject(EventLoopService)
-
-  patternCanvas!: HTMLCanvasElement
-  patternContext!: CanvasRenderingContext2D
+  patternPoints: {color: string, point: Point2d}[] = []
 
   ngOnInit() {
-    this.patternCanvas = this.patternCanvasRef.nativeElement
-    this.resize()
 
-    const patternContext = this.patternCanvas.getContext('2d')
-    if (patternContext) {
-      this.patternContext = patternContext
-      this.patternContext.translate(0.5, 0.5)
-    }
     this.eventLoop.addContinuous('animate-spyrograph', {
       function: () => {
-        this.draw()
+        this.updateCircleData()
         this.circleDrawer.draw()
+        this.updatePatternData()
+        this.patternDrawer.draw()
       },
     })
   }
 
-  resize() {
-    this.patternCanvas.height = this.dimentions().height
-    this.patternCanvas.width = this.dimentions().width
-
-    if (this.patternContext) {
-      this.patternContext.translate(0.5, 0.5)
-    }
-  }
-
-  draw() {
-    this.resize()
-    const center = {
-      x: this.dimentions().width / 2,
-      y: this.dimentions().height / 2,
-    }
+  updateCircleData() {
     for (const circle of this.circles) {
-      this.drawBaseCircle(circle, center)
-      this.updateAnimatedCircle(circle, center)
+      this.updateAnimatedCircle(circle)
     }
   }
 
-  private updateAnimatedCircle(circle: AnimatedCircle, center: Point2d) {
+  private updateAnimatedCircle(circle: AnimatedCircle) {
     const baseCircleCircumfrence = GeometryUtils.getCircumfrence(circle.baseCircle)
     const distTraveledAroundCircle = (circle.speed / (2 * Math.PI)) * GeometryUtils.getCircumfrence(circle)
     const angleTraveldAroundBaseCircle = (distTraveledAroundCircle / baseCircleCircumfrence) * (2 * Math.PI)
     circle.polarPosition.theta += angleTraveldAroundBaseCircle 
-    circle.position = GeometryUtils.getPointFromPolar(circle.polarPosition.radius, circle.polarPosition.theta, center.x, center.y)
+    circle.position = GeometryUtils.getPointFromPolar(circle.polarPosition.radius, circle.polarPosition.theta, this.center.x, this.center.y)
     
     if (circle.interior) {
       circle.drawingPoint.polarPosition.theta += (angleTraveldAroundBaseCircle - circle.speed)
@@ -92,15 +72,19 @@ export class SpyrographAnimatorComponent {
     circle.drawingPoint.position = GeometryUtils.getPointFromPolar(circle.drawingPoint.polarPosition.radius, circle.drawingPoint.polarPosition.theta)
   }
 
-  drawBaseCircle(circle: AnimatedCircle, center: Point2d) {
-    const ctx = this.patternContext
-    ctx.strokeStyle = 'black'
-    ctx.lineWidth = 2
-    ctx.beginPath()
-    // ctx.moveTo(center.x, center.y)
-    ctx.arc(center.x, center.y, circle.baseCircle.radius, 0, Math.PI * 2)
-    ctx.stroke()
-    ctx.closePath()
+  updatePatternData() {
+    this.patternPoints = []
+
+    for (const circle of this.circles) {
+      const point: Point2d = {
+        x: circle.position.x + circle.drawingPoint.position.x,
+        y: circle.position.y + circle.drawingPoint.position.y
+      } 
+      this.patternPoints.push({
+        color: circle.drawingPoint.strokeColor,
+        point
+      })
+    }
   }
 
   private getRandomColor(): string | CanvasGradient | CanvasPattern {

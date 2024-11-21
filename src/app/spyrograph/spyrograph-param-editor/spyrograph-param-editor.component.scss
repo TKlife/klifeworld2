@@ -4,9 +4,30 @@
 }
 
 .section-header {
-  @apply font-semibold uppercase tracking-wider col-span-4 -ml-2;
+  @apply font-semibold uppercase tracking-widest col-span-4 -ml-2;
 }
 
 .section-label {
-  @apply justify-self-end self-center font-light tracking-wider;
+  @apply justify-self-end self-center font-light tracking-widest;
+}
+
+.circle-info {
+  @apply flex gap-2 items-center;
+
+  input {
+    @apply bg-transparent border-none;
+  }
+
+  &.selected {
+    @apply bg-gray-300 text-black;
+    
+    input {
+      @apply text-black;
+      
+    }
+  }
+}
+
+input {
+  max-width: 5rem;
 }

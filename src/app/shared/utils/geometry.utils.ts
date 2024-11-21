@@ -40,8 +40,6 @@ export class GeometryUtils {
       theta += (Math.PI * 2)
     }
 
-    console.log(theta * (180 / Math.PI))
-
     return {radius, theta }
   }
 
@@ -68,6 +66,33 @@ export class GeometryUtils {
     }
   }
 
+  /**
+   * takes N positions and returns a new position where the x is sum of xs and the y is the sum of ys
+   * @param positions list of positions to add coordinates together
+   * @returns new position with combined x and combined y
+   */
+  static addPostions(...positions: Point2d[]) {
+    const position = {x: 0, y: 0}
+    for (const pos of positions) {
+      position.x += pos.x
+      position.y += pos.y
+    }
+
+    return position
+  }
+
+  static getRoundedPoint(point: Point2d) {
+    const newPoint = {...point}
+    newPoint.x = Math.round(point.x)
+    newPoint.y = Math.round(point.y)
+    return newPoint
+  }
+
+  static roundPoint(point: Point2d) {
+    point.x = Math.round(point.x)
+    point.y = Math.round(point.y)
+  }
+  
   static lengthOfLine(point1: Point2d, point2: Point2d) {
     return Math.sqrt((Math.pow(Math.abs(point1.x - point2.x), 2) + Math.pow(Math.abs(point1.y - point2.y), 2)))
   }

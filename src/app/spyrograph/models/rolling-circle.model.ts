@@ -3,8 +3,14 @@ import { PolarPoint2d } from '../../shared/models/geometry/polar-point-2d.model'
 import { GraphicCircle } from '../../shared/models/graphics/graphic-circle.model'
 
 export interface RollingCircle extends GraphicCircle {
-  speed: number
+  name: string
+  deltaTheta: number
+  deltaByBase: boolean
+  frameRate: number
   drawingPoint: GraphicCircle
   baseCircle: GraphicCircle
   interior: boolean
+  patterColor: string
+  patterLineWidth: number
+  draw: boolean
 }

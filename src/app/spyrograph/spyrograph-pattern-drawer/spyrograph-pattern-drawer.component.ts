@@ -1,7 +1,8 @@
-import { Component, effect, ElementRef, Input, ViewChild } from '@angular/core';
+import { Component, effect, ElementRef, Input, ViewChild, ɵCurrencyIndex } from '@angular/core';
 import { RollingCircle } from '../models/rolling-circle.model';
 import { Point2d } from '../../shared/models/geometry/point-2d.model';
 import { Dimentions2d } from '../../shared/models/geometry/dimentions-2d.model';
+import { SpyrographCircleDrawerComponent } from '../spyrograph-circle-drawer/spyrograph-circle-drawer.component';
 
 @Component({
   selector: 'klife-spyrograph-pattern-drawer',
@@ -10,61 +11,64 @@ import { Dimentions2d } from '../../shared/models/geometry/dimentions-2d.model';
   templateUrl: './spyrograph-pattern-drawer.component.html',
   styleUrl: './spyrograph-pattern-drawer.component.scss'
 })
-export class SpyrographPatternDrawerComponent {
-  @ViewChild('patternCanvas', {static: true})
+export class SpyrographPatternDrawerComponent extends SpyrographCircleDrawerComponent {
+  @ViewChild('patterCanvas', {static: true})
   patterCanvasRef!: ElementRef<HTMLCanvasElement>
   @Input()
-  drawingPoints: {color: string, point: Point2d}[] = []
-  @Input()
-  center!: Point2d
+  drawingPoints: {color: string, width: number, point: Point2d}[] = []
 
   patternCanvas!: HTMLCanvasElement
   patternContext!: CanvasRenderingContext2D
 
   lastPoints: Point2d[] = []
 
-  constructor() {
-    effect(() => {
-      this.draw()
-    })
-  }
+  override drawOnInit: boolean = false
 
-  ngOnInit() {    
+  override ngOnInit() {
+    super.ngOnInit()
     this.patternCanvas = this.patterCanvasRef.nativeElement
-    this.resize()
-    
-    const patternContext = this.patternCanvas.getContext('2d')
-    if (patternContext) {
-      this.patternContext = patternContext
+    this.resize(this.patternCanvas)
+
+    const context = this.patternCanvas.getContext('2d')
+    if (context) {
+      this.patternContext = context
       this.patternContext.translate(0.5, 0.5)
     }
-    for (const [index, point] of this.drawingPoints.entries()) {
-      this.lastPoints[index] = point.point
+    if (this.drawOnInit) {
+      this.drawCircles()
     }
   }
 
-  resize() {
-    this.patternCanvas.height = this.center.y * 2
-    this.patternCanvas.width = this.center.x * 2
-    
-    if (this.patternContext) {
-      this.patternContext.translate(0.5, 0.5)
+  animate() {
+    for (const circle of this.circles) {
+      this.resize(this.circleCanvas)
+      this.drawBaseCircle(circle)
+      this.drawRollingCircle(circle)
+    }
+    this.drawPattern()
+    for (const circle of this.circles) {
+      this.drawDrawingPoint(circle)
     }
   }
 
-  draw() {
-    for (const [index, point] of this.drawingPoints.entries()) {
+  drawPattern() {
+    for (const [index, patternData] of this.drawingPoints.entries()) {
       const lastPoint = this.lastPoints[index]
       if (lastPoint) {
         this.patternContext.beginPath()
         this.patternContext.moveTo(lastPoint.x, lastPoint.y)
-        this.patternContext.lineTo(point.point.x, point.point.y)
+        this.patternContext.lineTo(patternData.point.x, patternData.point.y)
         this.patternContext.closePath()
-        this.patternContext.strokeStyle = point.color
-        this.patternContext.lineWidth = 2
+        this.patternContext.strokeStyle = patternData.color
+        this.patternContext.lineWidth = patternData.width
         this.patternContext.stroke()
       }
-      this.lastPoints[index] = point.point
+      this.lastPoints[index] = patternData.point
     }
+  }
+
+  clear() {
+    this.resize(this.circleCanvas)
+    this.resize(this.patternCanvas)
   }
 }

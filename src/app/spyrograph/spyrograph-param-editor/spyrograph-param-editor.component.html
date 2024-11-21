@@ -1,83 +1,124 @@
-<div #container class="h-full w-full realtive" (mousedown)="insideCircle($event, container)" (mouseup)="mouseUp($event, container)">
-  <klife-spyrograph-circle-drawer #drawer [center]="center" [circles]="circles()"></klife-spyrograph-circle-drawer>
-  <div class="absolute right-4 top-4 bottom-4 flex flex-col bg-black opacity-50 gap-4 p-4">
-    <span class="opacity-100 text-white col-span-4 font-semibold text-lg uppercase tracking-wider">Parameters</span>
-    <div class="grow px-6">
-      <div class="parameters-container">
-        <ng-container *ngIf="selectedCircle">
-          <span class="section-header">Position</span>
-          <span class="section-label">X</span>
-          <input type="number" [(ngModel)]="selectedCircle.position.x" (input)="updateCircle(selectedCircle)">
-          <span class="section-label">Y</span>
-          <input type="number" [(ngModel)]="selectedCircle.position.y" (input)="updateCircle(selectedCircle)">
-          <span class="section-label">Point X</span>
-          <input type="number" [(ngModel)]="selectedCircle.drawingPoint.position.x" (input)="updateCircle(selectedCircle)">
-          <span class="section-label">Point Y</span>
-          <input type="number" [(ngModel)]="selectedCircle.drawingPoint.position.y" (input)="updateCircle(selectedCircle)">
-          <span class="section-header">Size</span>
-          <span class="section-label">Circle Radius</span>
-          <input type="number" [(ngModel)]="selectedCircle.radius" (input)="updateCircle(selectedCircle)">
-          <span class="section-label">Point Radius</span>
-          <input type="number" [(ngModel)]="selectedCircle.drawingPoint.radius" (input)="updateCircle(selectedCircle)">
-
-          <span class="section-header">Circle Look</span>
+<div #container class="h-full w-full realtive" (mousedown)="onMouseDown($event)" (mouseup)="mouseUp()">
+  <klife-spyrograph-circle-drawer #drawer [center]="center" [circles]="drawnCircles" [alwaysDraw]="true"></klife-spyrograph-circle-drawer>
+  <div class="absolute top-0 right-0 left-0 bg-black text-white text-sm">
+    <div class="flex h-min">
+      <div class="flex flex-col gap-2 px-4 py-2 pb-4 text-xs border-r-0.5 border-gray-500">
+        <div class="uppercase tracking-widest font-semi-bold"><span>Rolling Circle</span></div> 
+        <div class="grid gap-4 w-min" style="grid-template-columns: repeat(6, 1fr);">
+          <span class="section-label">Position</span>
+          <div class="col-span-3 flex gap-2 w-min">
+            <input type="number" class="w-20" [(ngModel)]="selectedCircle.position.x" (input)="updateCircle()">
+            <input type="number" class="w-20" [(ngModel)]="selectedCircle.position.y" (input)="updateCircle()">
+          </div>
+          <span class="section-label">Radius</span>
+          <input type="number" [(ngModel)]="selectedCircle.radius" (input)="updateCircle()">
+          <span class="section-label">Fill</span>
+          <div class="w-6 h-6 rounded-full justify-self-end self-center relative" [style.backgroundColor]="selectedCircle.fillColor">
+            <input [(colorPicker)]="selectedCircle.fillColor" class="absolute inset-0 opacity-0 text-white" (colorPickerChange)="updateCircle()">
+          </div>
           <span class="section-label">Outline</span>
-          <input type="text" [(ngModel)]="selectedCircle.strokeColor" (input)="updateCircle(selectedCircle)">
+          <div class="w-6 h-6 rounded-full justify-self-end self-center relative" [style.backgroundColor]="selectedCircle.strokeColor">
+            <input [(colorPicker)]="selectedCircle.strokeColor" class="absolute inset-0 opacity-0 text-white" (colorPickerChange)="updateCircle()">
+          </div>
           <span class="section-label">Width</span>
-          <input type="number" [(ngModel)]="selectedCircle.lineWidth" (input)="updateCircle(selectedCircle)">
+          <input type="number" [(ngModel)]="selectedCircle.lineWidth" (input)="updateCircle()">
+          <label class="section-label">Fill</label>
+          <input type="checkbox" class="justify-self-end self-center" [(ngModel)]="selectedCircle.fill" (change)="updateCircle()">
+          <label class="section-label">Stroke</label>
+          <input type="checkbox" class="justify-self-end self-center" [(ngModel)]="selectedCircle.stroke" (change)="updateCircle()">
+          <label class="section-label">Hide</label>
+          <input type="checkbox" class="justify-self-center self-center" [checked]="!selectedCircle.fill && !selectedCircle.stroke">
+        </div>
+      </div>
+      <div class="flex flex-col gap-2 px-4 py-2 pb-4 text-xs border-r-0.5 border-gray-500">
+        <div class="uppercase tracking-widest font-semi-bold"><span>Drawing Point</span></div>   
+        <div class="grid gap-4 w-min" style="grid-template-columns: repeat(6, 1fr);">
+          <span class="section-label">Position</span>
+          <div class="col-span-3 flex gap-2 w-min">
+            <input type="number" class="w-20" [(ngModel)]="selectedCircle.drawingPoint.position.x" (input)="updateDrawingPoint()">
+            <input type="number" class="w-20" [(ngModel)]="selectedCircle.drawingPoint.position.y" (input)="updateDrawingPoint()">
+          </div>
+          <span class="section-label">Radius</span>
+          <input type="number" [(ngModel)]="selectedCircle.drawingPoint.radius" (input)="updateDrawingPoint()">
           <span class="section-label">Fill</span>
-          <input type="text" [(ngModel)]="selectedCircle.fillColor" (input)="updateCircle(selectedCircle)">
-          <div class="self-center">
-            <label class="section-label pr-4">Stroke</label>
-            <input type="checkbox" [(ngModel)]="selectedCircle.stroke" (change)="updateCircle(selectedCircle)">
+          <div class="w-6 h-6 rounded-full justify-self-end self-center relative" [style.backgroundColor]="selectedCircle.drawingPoint.fillColor">
+            <input [(colorPicker)]="selectedCircle.drawingPoint.fillColor" class="absolute inset-0 opacity-0 text-white" (colorPickerChange)="updateDrawingPoint()">
           </div>
-          <div class="self-center">
-            <label class="section-label pr-4">Fill</label>
-            <input type="checkbox" [(ngModel)]="selectedCircle.fill" (change)="updateCircle(selectedCircle)">
-          </div>
-
-          <span class="section-header">Point Look</span>
           <span class="section-label">Outline</span>
-          <input type="text" [(ngModel)]="selectedCircle.drawingPoint.strokeColor" (input)="updateCircle(selectedCircle)">
-          <span class="section-label">Line Width</span>
-          <input type="number" [(ngModel)]="selectedCircle.drawingPoint.lineWidth" (input)="updateCircle(selectedCircle)">
+          <div class="w-6 h-6 rounded-full justify-self-end self-center relative" [style.backgroundColor]="selectedCircle.drawingPoint.strokeColor">
+            <input [(colorPicker)]="selectedCircle.drawingPoint.strokeColor" class="absolute inset-0 opacity-0 text-white" (colorPickerChange)="updateDrawingPoint()">
+          </div>
+          <span class="section-label">Width</span>
+          <input type="number" [(ngModel)]="selectedCircle.drawingPoint.lineWidth" (input)="updateDrawingPoint()">
+          <label class="section-label">Fill</label>
+          <input type="checkbox" class="justify-self-end self-center" [(ngModel)]="selectedCircle.drawingPoint.fill" (change)="updateDrawingPoint()">
+          <label class="section-label">Stroke</label>
+          <input type="checkbox" class="justify-self-end self-center" [(ngModel)]="selectedCircle.drawingPoint.stroke" (change)="updateDrawingPoint()">
+          <label class="section-label">Hide</label>
+          <input type="checkbox" class="justify-self-center self-center" [checked]="!selectedCircle.drawingPoint.fill && !selectedCircle.drawingPoint.stroke">
+        </div>
+      </div>
+      <div class="flex flex-col gap-2 px-4 py-2 pb-4 text-xs border-r-0.5 border-gray-500">
+        <div class="uppercase tracking-widest font-semi-bold"><span>Base Circle</span></div>   
+        <div class="grid gap-4 w-min" style="grid-template-columns: repeat(6, 1fr);">
+          <span class="section-label">Position</span>
+          <div class="col-span-3 flex gap-2 w-min">
+            <input type="number" class="w-20" [(ngModel)]="selectedCircle.baseCircle.position.x" disabled="true" (input)="updateBaseCircle()">
+            <input type="number" class="w-20" [(ngModel)]="selectedCircle.baseCircle.position.y" disabled="true" (input)="updateBaseCircle()">
+          </div>
+          <span class="section-label">Radius</span>
+          <input type="number"  [(ngModel)]="selectedCircle.baseCircle.radius" (input)="baseCircleRadiusSubject.next(selectedCircle.baseCircle.radius)">
           <span class="section-label">Fill</span>
-          <input type="text" [(ngModel)]="selectedCircle.drawingPoint.fillColor" (input)="updateCircle(selectedCircle)">
-          <div class="self-center">
-            <label class="section-label pr-4">Stroke</label>
-            <input type="checkbox" [(ngModel)]="selectedCircle.drawingPoint.stroke" (change)="updateCircle(selectedCircle)">
+          <div class="w-6 h-6 rounded-full justify-self-end self-center relative" [style.backgroundColor]="selectedCircle.baseCircle.fillColor">
+            <input [(colorPicker)]="selectedCircle.baseCircle.fillColor" class="absolute inset-0 opacity-0 text-white" (colorPickerChange)="updateBaseCircle()">
           </div>
-          <div class="self-center">
-            <label class="section-label pr-4">Fill</label>
-            <input type="checkbox" [(ngModel)]="selectedCircle.drawingPoint.fill" (change)="updateCircle(selectedCircle)">
-          </div>
-
-          <span class="section-header">Base Circle Look</span>
           <span class="section-label">Outline</span>
-          <input type="text" [(ngModel)]="selectedCircle.baseCircle.strokeColor" (input)="updateCircle(selectedCircle)">
-          <span class="section-label">Line Width</span>
-          <input type="number" [(ngModel)]="selectedCircle.baseCircle.lineWidth" (input)="updateCircle(selectedCircle)">
-          <span class="section-label">Fill</span>
-          <input type="text" [(ngModel)]="selectedCircle.baseCircle.fillColor" (input)="updateCircle(selectedCircle)">
-          <div class="self-center">
-            <label class="section-label pr-4">Stroke</label>
-            <input type="checkbox" [(ngModel)]="selectedCircle.baseCircle.stroke" (change)="updateCircle(selectedCircle)">
+          <div class="w-6 h-6 rounded-full justify-self-end self-center relative" [style.backgroundColor]="selectedCircle.baseCircle.strokeColor">
+            <input [(colorPicker)]="selectedCircle.baseCircle.strokeColor" class="absolute inset-0 opacity-0 text-white" (colorPickerChange)="updateBaseCircle()">
           </div>
-          <div class="self-center">
-            <label class="section-label pr-4">Fill</label>
-            <input type="checkbox" [(ngModel)]="selectedCircle.baseCircle.fill" (change)="updateCircle(selectedCircle)">
+          <span class="section-label">Width</span>
+          <input type="number" [(ngModel)]="selectedCircle.baseCircle.lineWidth" (input)="updateBaseCircle()">
+          <label class="section-label">Fill</label>
+          <input type="checkbox" class="justify-self-end self-center" [(ngModel)]="selectedCircle.baseCircle.fill" (change)="updateBaseCircle()">
+          <label class="section-label">Stroke</label>
+          <input type="checkbox" class="justify-self-end self-center"  [(ngModel)]="selectedCircle.baseCircle.stroke" (change)="updateBaseCircle()">
+          <label class="section-label">Hide</label>
+          <input type="checkbox" class="justify-self-center self-center" [checked]="!selectedCircle.baseCircle.fill && !selectedCircle.baseCircle.stroke">
+        </div>
+      </div>
+      <div class="flex flex-col gap-2 px-4 py-2 pb-4 text-xs border-r-0.5 border-gray-500">
+        <div class="uppercase tracking-widest font-semi-bold"><span>Pattern</span></div>   
+        <div class="grid gap-4 w-min" style="grid-template-columns: repeat(4, 1fr);">
+          <span class="section-label">Color</span>
+          <div class="w-6 h-6 rounded-full justify-self-end self-center relative" [style.backgroundColor]="selectedCircle.patterColor">
+            <input [(colorPicker)]="selectedCircle.patterColor" class="absolute inset-0 opacity-0 text-white">
           </div>
-
-          <span class="section-header">Speed</span>
-          <span class="section-label">Jump Angle</span>
-          <input type="number" [(ngModel)]="selectedCircle.speed" (input)="updateCircle(selectedCircle)">
-          <span class="section-label">Speed</span>
-          <input type="number" [(ngModel)]="eventLoop.frameRate" (input)="eventLoop.changeFrameRate()">
-        </ng-container>
+          <span class="section-label">Width</span>
+          <input type="number" [(ngModel)]="selectedCircle.patterLineWidth">
+          <!-- <span class="section-label">Speed</span>
+          <input type="number" [(ngModel)]="eventLoop.frameRate" (input)=""> -->
+          <span class="section-label">&Delta; &Theta;</span>
+          <input type="number"  [(ngModel)]="selectedCircle.deltaTheta">
+          <span class="section-label whitespace-nowrap">&Delta; by Base</span>
+          <input type="checkbox" class="justify-self-start self-center" [(ngModel)]="selectedCircle.deltaByBase">
+          <span class="section-label">Interior</span>
+          <input type="checkbox" class="justify-self-start self-center" [(ngModel)]="selectedCircle.interior" (change)="updateCircle()">
+        </div>
+      </div>
+      <div class="grow flex flex-col gap-2 py-2 pb-4 px-4 overflow-hidden">
+        <div class="grow bg-gray-600 rounded-lg p-1 overflow-auto" style="height: 86px">
+          <div *ngFor="let circle of circles" class="circle-info" [ngClass]="{'selected': selectedCircle === circle}" (click)="selectCircle(circle)">
+            <input [(ngModel)]="circle.name">
+            <span>{{circlePositionString}}</span>
+            <span>{{circle.radius}}r</span>
+            <input type="checkbox" [(ngModel)]="circle.draw">
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <button class="bg-emerald-500" (click)="addCircle()">ADD</button>
+          <button class="bg-red-600" (click)="removeCircle()" [disabled]="circles.length === 1">REMOVE</button>
+        </div>
       </div>
     </div>
-    <button class="opacity-100 bg-white text-black" (click)="startAnimation.emit()">
-      start
-    </button>
   </div>
 </div>

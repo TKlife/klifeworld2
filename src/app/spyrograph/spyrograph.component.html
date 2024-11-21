@@ -1,8 +1,22 @@
-<!-- <klife-spyrograph-circle-drawer [dimentions]="dimentions()" [circles]="rollingCircles"></klife-spyrograph-circle-drawer> -->
-<!-- <ng-container #view></ng-container> -->
- <ng-container *ngIf="!startedAnimation; else animation">
-   <klife-spyrograph-param-editor [center]="center()" [circles]="rollingCircles" (startAnimation)="startAnimation()"></klife-spyrograph-param-editor>
-  </ng-container>
-<ng-template #animation>
-  <klife-spyrograph-animator [center]="center()" [circles]="rollingCircles()"></klife-spyrograph-animator>
- </ng-template>
+<div class="h-full w-full flex flex-col overflow-hidden">
+  <div class="w-full py-2 px-4 border-b-1 border-b-gray-500 flex justify-between items-center bg-black text-white">
+    <span class="font-bold uppercase tracking-widest">parameters <i class="pl-2 fa fa-angle-down"></i></span>
+    <div class="flex flex-row-reverse gap-4">
+      <ng-container *ngIf="!this.startedAnimation; else animationRunning">
+        <button (click)="this.startAnimation()">Start</button>
+      </ng-container>
+      <ng-template #animationRunning>
+        <button class="bg-red-600" (click)="reset()">Reset</button>
+        <button (click)="eventLoop.togglePause()">{{!eventLoop.paused ? 'Pause' : 'Restart'}}</button>
+      </ng-template>
+    </div>
+  </div>
+  <div #container class="relative grow">
+    <ng-container *ngIf="!startedAnimation; else animation">
+      <klife-spyrograph-param-editor [center]="center()" [circles]="rollingCircles" (startAnimation)="startAnimation()"></klife-spyrograph-param-editor>
+     </ng-container>
+    <ng-template #animation>
+      <klife-spyrograph-animator #animator [center]="center()" [circles]="rollingCircles"></klife-spyrograph-animator>
+    </ng-template>
+  </div>
+</div>

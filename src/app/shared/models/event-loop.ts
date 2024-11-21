@@ -1,22 +1,13 @@
-import { Injectable } from '@angular/core';
-import { interval, Subscription } from 'rxjs';
-import { Point2d } from '../models/geometry/point-2d.model';
-import { SelectMultipleControlValueAccessor } from '@angular/forms';
-import { waitForAsync } from '@angular/core/testing';
+import { Subscription, interval } from "rxjs"
 
-@Injectable({
-  providedIn: 'root'
-})
-export class EventLoopService {
-  frameRate = 60
-  mousePostition: Point2d = {x: 0, y: 0}
+export class EventLoop {
+  frameRate: number
   events: {[key: string] : {params?: any[], function: (params?: any[]) => any, continous?: boolean}} = {}
-  listenerCache: {[key: string] : {params?: any[], function: (params?: any[]) => any}} = {}
   paused = false
   loop!: Subscription
 
-  constructor() {
-    this.startEventLoop()
+  constructor(frameRate: number) {
+    this.frameRate = frameRate
   }
 
   async startEventLoop() {

@@ -10,5 +10,25 @@ html, body {
 }
 
 input {
-  @apply text-black px-2 py-2 rounded-md
+  @apply px-2 py-0.5 font-light tracking-wider rounded-lg  bg-gray-800 text-white border-0.5 border-gray-600;
+
+  &[type="number"] {
+    @apply font-mono;
+  }
+
+  &:disabled {
+    @apply bg-gray-600 text-gray-400 cursor-not-allowed;
+  }
+}
+
+button {
+  @apply bg-yellow-500 text-white font-light tracking-wider px-2 py-0.5 rounded-md;
+
+  &:disabled {
+    @apply bg-gray-600 text-gray-400 cursor-not-allowed;
+  }
+}
+
+.color-picker input {
+  background-color: white !important;
 }

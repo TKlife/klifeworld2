@@ -6,6 +6,7 @@ import {
   inject,
   Signal,
   signal,
+  viewChild,
   ViewChild,
   ViewContainerRef,
   WritableSignal,
@@ -18,6 +19,8 @@ import { SpyrographAnimatorComponent } from './spyrograph-animator/spyrograph-an
 import { AnimatedCircle } from './spyrograph-animator/animated-circle.model'
 import { GeometryUtils } from '../shared/utils/geometry.utils'
 import { CommonModule } from '@angular/common'
+import { EventLoopService } from '../shared/services/event-loop.service'
+import { RollingCircleUtils } from './util/rolling-circle.util'
 
 @Component({
   selector: 'klife-spyrograph',
@@ -27,10 +30,14 @@ import { CommonModule } from '@angular/common'
   styleUrl: './spyrograph.component.scss',
 })
 export class SpyrographComponent {
-  @ViewChild('view', { static: true, read: ViewContainerRef })
-  view!: ViewContainerRef
+  @ViewChild('container', { static: true })
+  container!: ElementRef<HTMLDivElement>
 
-  element = inject(ElementRef)
+  @ViewChild('animator')
+  animator!: SpyrographAnimatorComponent
+
+  eventLoop = inject(EventLoopService)
+
   dimentions: WritableSignal<Dimentions2d> = signal({ height: 0, width: 0 })
   center: Signal<Point2d> = computed(() => {
     return {
@@ -38,21 +45,21 @@ export class SpyrographComponent {
       y: this.dimentions().height / 2,
     }
   })
-  rollingCircles: WritableSignal<RollingCircle[]> = signal([])
+  rollingCircles: RollingCircle[] = []
   startedAnimation = false
 
   ngOnInit() {
     this.resize()
     const circle = this.createRollingCircle()
     circle.drawingPoint.position = GeometryUtils.getPointFromPolar(circle.drawingPoint.polarPosition.radius, circle.drawingPoint.polarPosition.theta)
-    this.rollingCircles.set([circle])
+    this.rollingCircles.push(circle)
   }
 
   @HostListener('window:resize', ['event'])
   resize() {
     this.dimentions.set({
-      height: this.element.nativeElement.clientHeight,
-      width: this.element.nativeElement.clientWidth,
+      height: this.container.nativeElement.clientHeight,
+      width: this.container.nativeElement.clientWidth,
     })
   }
 
@@ -60,45 +67,12 @@ export class SpyrographComponent {
     this.startedAnimation = true
   }
 
-  createRollingCircle(interior = true): RollingCircle {
-    const radius = 140
-    const position = {x: this.center().x + 290, y: this.center().y}
-    const polarPosition = GeometryUtils.getPolarFromPoint({x: position.x - this.center().x, y: position.y - this.center().y})
-    const baseCircleRadius = GeometryUtils.lengthOfLine(this.center(), position) + radius
-    return {
-      radius,
-      position,
-      polarPosition,
-      speed: .2,
-      strokeColor: '#FF0000',
-      fillColor: '#FF0000',
-      opacity: 1,
-      lineWidth: 1,
-      drawingPoint: {
-        radius: 5,
-        position: { x: 0, y: 0 },
-        polarPosition: {radius: 70, theta: 0},
-        opacity: 1,
-        lineWidth: 1,
-        strokeColor: '#FF9911',
-        fillColor: '#FF9911',
-        stroke: true,
-        fill: true,
-      },
-      baseCircle: {
-        radius: baseCircleRadius,
-        position: this.center(),
-        polarPosition: {radius: 0, theta: 0}, 
-        opacity: 1,
-        lineWidth: 1,
-        strokeColor: '#009988',
-        fillColor: '#009988',
-        stroke: true,
-        fill: true,
-      },
-      interior: interior,
-      stroke: true,
-      fill: true,
-    }
+  reset() {
+    this.animator.reset()
+    this.startedAnimation = false
+  }
+
+  createRollingCircle(): RollingCircle {
+    return RollingCircleUtils.getNewRollingCircle({...this.center()})
   }
 }

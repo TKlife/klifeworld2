@@ -11,6 +11,7 @@ import { Dimentions2d } from '../../shared/models/geometry/dimentions-2d.model'
 import { RollingCircle } from '../models/rolling-circle.model'
 import { Point2d } from '../../shared/models/geometry/point-2d.model'
 import { GraphicCircle } from '../../shared/models/graphics/graphic-circle.model'
+import { RollingCircleUtils } from '../util/rolling-circle.util'
 
 @Component({
   selector: 'klife-spyrograph-circle-drawer',
@@ -27,89 +28,73 @@ export class SpyrographCircleDrawerComponent {
   circles!: RollingCircle[]
   @Input()
   center!: Point2d
+  @Input()
+  alwaysDraw = false
 
   canvasContainer!: HTMLDivElement
   circleCanvas!: HTMLCanvasElement
   circleContext!: CanvasRenderingContext2D
 
+  drawOnInit = true
 
   ngOnInit() {
     this.circleCanvas = this.circleCanvasRef.nativeElement
-    this.resize()
+    this.resize(this.circleCanvas)
 
-    const circleContext = this.circleCanvas.getContext('2d')
-    if (circleContext) {
-      this.circleContext = circleContext
+    const context = this.circleCanvas.getContext('2d')
+    if (context) {
+      this.circleContext = context
       this.circleContext.translate(0.5, 0.5)
     }
-    this.draw()
-  }
-
-  public draw() {
-    this.resize()
-    for (const selectedCircle of this.circles) {
-      this.drawRollingCircle(selectedCircle)
+    if (this.drawOnInit) {
+      this.drawCircles()
     }
   }
 
-  resize() {
-    this.circleCanvas.height = this.center.y * 2
-    this.circleCanvas.width = this.center.x * 2
+  public drawCircles() {
+    this.resize(this.circleCanvas)
+    for (const circle of this.circles) {
+      this.drawBaseCircle(circle)
+      this.drawRollingCircle(circle) 
+      this.drawDrawingPoint(circle)
+    }
+  }
+
+  resize(canvas: HTMLCanvasElement) {
+    canvas.height = this.center.y * 2
+    canvas.width = this.center.x * 2
     
     if (this.circleContext) {
       this.circleContext.translate(0.5, 0.5)
     }
   }
 
-  drawRollingCircle(selectedCircle: RollingCircle) {
-    this.drawGraphicCircle(selectedCircle.baseCircle)
-    this.drawGraphicCircle(selectedCircle)
-    this.drawGraphicCircle(selectedCircle.drawingPoint, {x: selectedCircle.position.x + selectedCircle.drawingPoint.position.x, y: selectedCircle.position.y + selectedCircle.drawingPoint.position.y})
-    
+  drawBaseCircle(circle: RollingCircle) {
+    this.drawGraphicCircle(circle.baseCircle, circle.baseCircle.position, false)
   }
 
-  private drawDrawingPoint(circle: RollingCircle, ctx: CanvasRenderingContext2D) {
-    const drawingPoint = circle.drawingPoint
-    ctx.strokeStyle = drawingPoint.strokeColor
-    ctx.fillStyle = drawingPoint.fillColor
-    ctx.beginPath()
-    ctx.arc(circle.position.x + drawingPoint.position.x, circle.position.y + drawingPoint.position.y, drawingPoint.radius, 0, Math.PI * 2)
-    if (drawingPoint.stroke) {
-      ctx.stroke()
-    }
-    if (drawingPoint.fill) {
-      ctx.fill()
-    }
-    ctx.closePath()
+  drawRollingCircle(circle: RollingCircle) {
+    const position = RollingCircleUtils.getRollingCirclePosition(circle)
+    this.drawGraphicCircle(circle, position)
   }
 
-  private drawCircle(ctx: CanvasRenderingContext2D, circle: RollingCircle) {
-    ctx.beginPath()
-    ctx.arc(circle.position.x, circle.position.y, circle.radius, 0, Math.PI * 2)
-    if (circle.stroke) {
-      ctx.stroke()
-    }
-    if (circle.fill) {
-      ctx.fill()
-    }
-    ctx.closePath()
+  drawDrawingPoint(circle: RollingCircle) {
+    const circlePosition = {x: circle.baseCircle.position.x + circle.position.x, y: circle.baseCircle.position.y + circle.position.y}
+    const position = {x: circlePosition.x + circle.drawingPoint.position.x, y: circlePosition.y + circle.drawingPoint.position.y}
+    this.drawGraphicCircle(circle.drawingPoint, position)
   }
 
-  drawGraphicCircle(circle: GraphicCircle, position?: Point2d) {
+  drawGraphicCircle(circle: GraphicCircle, position: Point2d, includeAlwaysDraw = true) {
     const ctx = this.circleContext
     ctx.strokeStyle = circle.strokeColor
     ctx.fillStyle = circle.fillColor
     ctx.lineWidth = circle.lineWidth
     ctx.beginPath()
-    if (!position) {
-      ctx.arc(circle.position.x, circle.position.y, circle.radius, 0, Math.PI * 2)
-    } else {
-      ctx.arc(position.x, position.y, circle.radius, 0, Math.PI * 2)
-    }
-    if (circle.stroke) {
+    ctx.arc(position.x, position.y, circle.radius, 0, Math.PI * 2)
+    if (circle.stroke || (this.alwaysDraw && includeAlwaysDraw)) {
       ctx.stroke()
     }
-    if (circle.fill) {
+    if (circle.fill || (this.alwaysDraw && includeAlwaysDraw)) {
       ctx.fill()
     }
     ctx.closePath()

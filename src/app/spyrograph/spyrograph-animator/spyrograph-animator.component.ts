@@ -1,104 +1,139 @@
 import {
   Component,
-  ElementRef,
   inject,
   Input,
   ViewChild,
-  ViewContainerRef,
-  WritableSignal,
+  ViewContainerRef
 } from '@angular/core'
-import { Dimentions2d } from '../../shared/models/geometry/dimentions-2d.model'
-import { SpyrographCircleDrawerComponent } from '../spyrograph-circle-drawer/spyrograph-circle-drawer.component'
-import { AnimatedCircle } from './animated-circle.model'
+import { Point2d } from '../../shared/models/geometry/point-2d.model'
 import { EventLoopService } from '../../shared/services/event-loop.service'
 import { GeometryUtils } from '../../shared/utils/geometry.utils'
-import { Point2d } from '../../shared/models/geometry/point-2d.model'
-import { bindCallback } from 'rxjs'
-import { SpyrographPatternDrawerComponent } from "../spyrograph-pattern-drawer/spyrograph-pattern-drawer.component";
+import { SpyrographCircleDrawerComponent } from '../spyrograph-circle-drawer/spyrograph-circle-drawer.component'
+import { SpyrographPatternDrawerComponent } from "../spyrograph-pattern-drawer/spyrograph-pattern-drawer.component"
+import { AnimatedCircle } from './animated-circle.model'
+import { PolarPoint2d } from '../../shared/models/geometry/polar-point-2d.model'
+import { RollingCircle } from '../models/rolling-circle.model'
+import { RollingCircleUtils } from '../util/rolling-circle.util'
+import { EventLoop } from '../../shared/models/event-loop'
 
 @Component({
   selector: 'klife-spyrograph-animator',
   standalone: true,
-  imports: [SpyrographCircleDrawerComponent, SpyrographPatternDrawerComponent],
+  imports: [SpyrographPatternDrawerComponent],
   templateUrl: './spyrograph-animator.component.html',
   styleUrl: './spyrograph-animator.component.scss',
 })
 export class SpyrographAnimatorComponent {
+  private readonly ANIMATE_EVENT_KEY = 'animate-spyrograph'
+  
   @ViewChild('view', { static: true, read: ViewContainerRef })
   view!: ViewContainerRef
-  @ViewChild('circleDrawer', { static: true })
-  circleDrawer!: SpyrographCircleDrawerComponent
   @ViewChild('patternDrawer', { static: true })
   patternDrawer!: SpyrographPatternDrawerComponent
   @Input()
-  circles: AnimatedCircle[] = []
+  circles: RollingCircle[] = []
   @Input()
   center!: Point2d
 
   eventLoop = inject(EventLoopService)
-  patternPoints: {color: string, point: Point2d}[] = []
+  patternPoints: {color: string, width: number, point: Point2d}[] = []
+  initialPosition: {position: Point2d, polarPosition: PolarPoint2d, drawingPointPosition: Point2d, drawingPointPolarPosition: PolarPoint2d}[] = []
 
   ngOnInit() {
-    this.updatePatternData()
-    for (const [index, point] of this.patternPoints.entries()) {
-      this.patternDrawer.lastPoints[index] = point.point
+    this.resetPatternData()
+
+    for (const [index, circle] of this.circles.entries()) {
+      this.initialPosition[index] = {
+        position: {...circle.position}, 
+        polarPosition: {...circle.polarPosition},
+        drawingPointPosition: {...circle.drawingPoint.position}, 
+        drawingPointPolarPosition: {...circle.drawingPoint.polarPosition}
+      }
     }
-    this.eventLoop.addContinuous('animate-spyrograph', {
+    this.eventLoop.addContinuous(this.ANIMATE_EVENT_KEY, {
       function: () => {
         this.updateCircleData()
-        this.circleDrawer.draw()
         this.updatePatternData()
         this.patternDrawer.drawingPoints = this.patternPoints
-        this.patternDrawer.draw()
+        this.patternDrawer.animate()
       },
     })
   }
 
-  updateCircleData() {
-    for (const circle of this.circles) {
-      this.updateAnimatedCircle(circle)
+  private resetPatternData() {
+    this.updatePatternData()
+    for (const [index, patternData] of this.patternPoints.entries()) {
+      this.patternDrawer.drawingPoints = this.patternPoints
+      this.patternDrawer.lastPoints[index] = patternData.point
     }
   }
 
-  private updateAnimatedCircle(circle: AnimatedCircle) {
+  updateCircleData() {
+    for (const circle of this.circles) {
+      if (circle.deltaByBase) {
+        this.updateAnimatedCircleByBaseDelta(circle)
+      } else {
+        this.updateAnimatedCircleByCircleDelta(circle)
+      }
+    }
+  }
+
+  private updateAnimatedCircleByCircleDelta(circle: AnimatedCircle) {
     const baseCircleCircumfrence = GeometryUtils.getCircumfrence(circle.baseCircle)
-    const distTraveledAroundCircle = (circle.speed / (2 * Math.PI)) * GeometryUtils.getCircumfrence(circle)
+    const distTraveledAroundCircle = (circle.deltaTheta / (2 * Math.PI)) * GeometryUtils.getCircumfrence(circle)
     const angleTraveldAroundBaseCircle = (distTraveledAroundCircle / baseCircleCircumfrence) * (2 * Math.PI)
     circle.polarPosition.theta += angleTraveldAroundBaseCircle 
-    circle.position = GeometryUtils.getPointFromPolar(circle.polarPosition.radius, circle.polarPosition.theta, this.center.x, this.center.y)
+    circle.position = GeometryUtils.getPointFromPolar(circle.polarPosition.radius, circle.polarPosition.theta)
     
     if (circle.interior) {
-      circle.drawingPoint.polarPosition.theta += (angleTraveldAroundBaseCircle - circle.speed)
+      circle.drawingPoint.polarPosition.theta += (angleTraveldAroundBaseCircle - circle.deltaTheta)
     } else {
-      circle.drawingPoint.polarPosition.theta += circle.speed
+      circle.drawingPoint.polarPosition.theta += circle.deltaTheta
       circle.drawingPoint.polarPosition.theta += angleTraveldAroundBaseCircle
+    }
+    circle.drawingPoint.position = GeometryUtils.getPointFromPolar(circle.drawingPoint.polarPosition.radius, circle.drawingPoint.polarPosition.theta)
+  }
+
+  private updateAnimatedCircleByBaseDelta(circle: AnimatedCircle) {
+    const baseCircleCircumfrence = GeometryUtils.getCircumfrence(circle)
+    const distTraveledAroundBaseCircle = (circle.deltaTheta / (2 * Math.PI)) * GeometryUtils.getCircumfrence(circle.baseCircle)
+    const angleTraveldAroundCircle = (distTraveledAroundBaseCircle / baseCircleCircumfrence) * (2 * Math.PI)
+    circle.polarPosition.theta += circle.deltaTheta 
+    circle.position = GeometryUtils.getPointFromPolar(circle.polarPosition.radius, circle.polarPosition.theta)
+    
+    if (circle.interior) {
+      circle.drawingPoint.polarPosition.theta += (circle.deltaTheta - angleTraveldAroundCircle)
+    } else {
+      circle.drawingPoint.polarPosition.theta += angleTraveldAroundCircle
+      circle.drawingPoint.polarPosition.theta += circle.deltaTheta
     }
     circle.drawingPoint.position = GeometryUtils.getPointFromPolar(circle.drawingPoint.polarPosition.radius, circle.drawingPoint.polarPosition.theta)
   }
 
   updatePatternData() {
     this.patternPoints = []
-
     for (const circle of this.circles) {
-      const point: Point2d = {
-        x: circle.position.x + circle.drawingPoint.position.x,
-        y: circle.position.y + circle.drawingPoint.position.y
-      } 
+      const point: Point2d = RollingCircleUtils.getDrawingPointPosition(circle)
       this.patternPoints.push({
-        color: circle.drawingPoint.strokeColor,
+        color: circle.patterColor,
+        width: circle.patterLineWidth,
         point
       })
     }
   }
 
-  private getRandomColor(): string | CanvasGradient | CanvasPattern {
-    const rand = Math.random()
-    if (rand < 0.33) {
-      return '#00FF00'
-    } else if (rand < 0.66) {
-      return '#00FFFF'
-    } else {
-      return '#0000FF'
+  reset() {
+    this.patternDrawer.clear()
+    this.eventLoop.removeEvent(this.ANIMATE_EVENT_KEY)
+
+    for (const [index, circle] of this.circles.entries()) {
+      const initial = this.initialPosition[index]
+      circle.position = {...initial.position}
+      circle.polarPosition = {...initial.polarPosition}
+      circle.drawingPoint.position = {...initial.drawingPointPosition}
+      circle.drawingPoint.polarPosition = {...initial.drawingPointPolarPosition}
     }
+
+    this.resetPatternData()
   }
 }

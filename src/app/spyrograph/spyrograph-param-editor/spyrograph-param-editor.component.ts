@@ -61,7 +61,7 @@ export class SpyrographParamEditorComponent {
 
     this.baseCircleRadiusSubject.pipe(
       debounce((v) => timer(300)),
-      distinctUntilChanged()
+      // distinctUntilChanged()
     ).subscribe(v => {
       this.updateBaseCircle()
     })
@@ -163,13 +163,22 @@ export class SpyrographParamEditorComponent {
 
   updateCircle() {
     if (this.selectedCircle) {
-      this.selectedCircle.radius = Number(this.selectedCircle.radius.toFixed(2))
       this.selectedCircle.polarPosition = GeometryUtils.getPolarFromPoint({x: this.selectedCircle.position.x, y: this.selectedCircle.position.y})
-      this.selectedCircle.baseCircle.radius = RollingCircleUtils.getBaseCircleRadius(this.selectedCircle)
       this.circlePositionString = this.getPositionString(RollingCircleUtils.getRollingCirclePosition(this.selectedCircle))
       this.drawer.drawCircles()
     }
   
+  }
+
+  updateCircleRadius() {
+    this.selectedCircle.radius = Number(this.selectedCircle.radius.toFixed(2))
+    if (this.selectedCircle.interior) {
+      this.selectedCircle.polarPosition = {radius: this.selectedCircle.baseCircle.radius - this.selectedCircle.radius, theta: this.selectedCircle.polarPosition.theta}
+    } else {
+      this.selectedCircle.polarPosition = {radius: this.selectedCircle.baseCircle.radius + this.selectedCircle.radius, theta: this.selectedCircle.polarPosition.theta}
+    }
+    this.selectedCircle.position = GeometryUtils.getPointFromPolar(this.selectedCircle.polarPosition.radius, this.selectedCircle.polarPosition.theta)
+    this.drawer.drawCircles()
   }
 
   updateBaseCircle() {
@@ -188,7 +197,8 @@ export class SpyrographParamEditorComponent {
 
   updateDrawingPoint() {
     if (this.selectedCircle) {
-      GeometryUtils.roundPoint(this.selectedCircle.drawingPoint.position)
+      this.selectedCircle.radius = Number(this.selectedCircle.radius.toFixed(2))
+      GeometryUtils.roundPoint(this.selectedCircle.drawingPoint.position,2)
       this.selectedCircle.drawingPoint.polarPosition = GeometryUtils.getPolarFromPoint(this.selectedCircle.drawingPoint.position)
       this.drawer.drawCircles()
     }

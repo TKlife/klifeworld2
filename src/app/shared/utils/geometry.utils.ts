@@ -88,9 +88,14 @@ export class GeometryUtils {
     return newPoint
   }
 
-  static roundPoint(point: Point2d) {
-    point.x = Math.round(point.x)
-    point.y = Math.round(point.y)
+  static roundPoint(point: Point2d, decPlace?: number) {
+    if (!decPlace) {
+      point.x = Math.round(point.x)
+      point.y = Math.round(point.y)
+    } else {
+      point.x = Number(point.x.toFixed(2))
+      point.y = Number(point.y.toFixed(2))
+    }
   }
   
   static lengthOfLine(point1: Point2d, point2: Point2d) {
